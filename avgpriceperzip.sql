@@ -22,7 +22,7 @@ join (
 		where category = 'resl' and (Status = 'closed' or Status = 'pending' or status = 'activeundercontract')
 		group by Zip_Code) as renttbl
 	on pricetbl.Zip_Code = renttbl.Zip_Code) as daytbl
-on avgtbl.Zip_Code = daytbl.Zip_Code
+on avgtbl.Zip_Code = daytbl.Zip_Code;
 
 
 
@@ -41,7 +41,7 @@ full outer join (
 	where category = 'ress' and (Status = 'closed' or Status = 'pending' or status = 'activeundercontract')
 	group by Zip_Code, Bedrooms) as pricebed
 on rentbed.Zip_Code = pricebed.Zip_Code AND rentbed.Bedrooms = pricebed.Bedrooms
-order by ZipCode, Bedrooms
+order by ZipCode, Bedrooms;
 
 
 
@@ -87,4 +87,4 @@ full outer join (
 		when datepart(quarter, settleddate) = 3 then '3rd quarter'
 		when datepart(quarter, settleddate) = 4 then '4th quarter' end, Zip_Code) as renttbl
 on renttbl.yearlyresults = pricetbl.yearlyresults AND renttbl.quarterlyresults = pricetbl.quarterlyresults AND renttbl.Zip_Code = pricetbl.Zip_Code
-order by Year, Quarter, ZipCode
+order by Year, Quarter, ZipCode;
