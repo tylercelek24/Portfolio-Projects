@@ -6,4 +6,4 @@ The objective of this project is to analyze and present comprehensive data on th
 
 The deliverables for this project will include a comprehensive presentation summarizing my housing market data analysis, key findings, insights, and recommendations for investors.
 
-Tableau dashboard can be found here: https://public.tableau.com/app/profile/tyler.celek/vizzes
+Tableau dashboard (Market Analysis can be found here: https://public.tableau.com/app/profile/tyler.celek/vizzes
