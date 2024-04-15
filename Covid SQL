@@ -1,0 +1,105 @@
+select *
+from CovidDeaths
+where continent is null
+order by 3,4;
+
+--select *
+--from Vaccinations
+--order by 3,4;
+
+--Data Preview
+select top 10 *
+from CovidDeaths;
+
+select top 10 *
+from Vaccinations;
+
+-- Select Data that we are going to be using
+
+select location, date, total_cases, total_deaths, population
+from CovidDeaths
+order by 1,2
+
+
+-- Looking at total cases vs total deaths
+select location, date, total_cases, total_deaths, format((cast(total_deaths as float)/cast(total_cases as float))*100, 'f2') as death_rate
+from CovidDeaths
+order by 1,2;
+
+
+-- Looking at max total cases vs max population
+select location, population as maxpop, max(total_cases) maxcases, (cast(Max(total_cases) as float)/cast(max(population) as float))*100 as infection_rate
+from CovidDeaths
+group by location, population
+order by 4 desc;
+
+--Looking at countries with the highest infection rate compared to population
+select location, population, date, max(total_cases) as infection_count, max((cast(total_cases as float)/cast(population as float)))*100 as percent_infected
+from CovidDeaths
+group by population, location, date
+order by percent_infected desc;
+
+-- Showing countries with highest death count per population
+select location, population, max(total_deaths) as max_death_count
+from CovidDeaths
+where continent is not null
+group by location, population
+order by population desc;
+
+--BREAKING DOWN NUMBERS BY CONTINENT--
+
+select location, max(total_deaths) as max_deaths
+from CovidDeaths
+where continent is null
+group by location
+order by max_deaths desc;
+
+--Global numbers
+select sum(new_cases) as total_cases, sum(new_deaths) as total_deaths, format((sum(cast(new_deaths as float))/sum(cast(new_cases as float)))*100, 'f4') as death_rate
+from CovidDeaths
+where continent is not null
+order by 1;
+
+--JOINING TABLES, CTEs, Temp Tables--
+
+--CTE - Looking at total population vs vaccinations
+with PopvsVac as 
+(select cd.continent, cd.location, cd.date, cd.population, cv.new_vaccinations, sum(cast(cv.new_vaccinations as bigint)) over (partition by cd.location order by cd.location, cd.date) as rolling_vac_count
+from CovidDeaths cd
+join Vaccinations cv
+	on cd.location = cv.location AND cd.date = cv.date
+where cd.continent is not null)
+
+select *, (cast(rolling_vac_count as float)/cast(population as float))*100 as vac_rate
+from PopvsVac
+
+--Temp Table -
+Drop Table if exists #VaccinationRates
+Create Table #VaccinationRates
+(continent nvarchar(50),
+location nvarchar(50),
+date datetime,
+population numeric,
+new_vaccinations numeric,
+rolling_vac_count numeric)
+
+insert into #VaccinationRates
+select cd.continent, cd.location, cd.date, cd.population, cv.new_vaccinations, sum(cast(cv.new_vaccinations as bigint)) over (partition by cd.location order by cd.location, cd.date) as rolling_vac_count
+from CovidDeaths cd
+join Vaccinations cv
+	on cd.location = cv.location AND cd.date = cv.date
+where cd.continent is not null
+
+select *, (rolling_vac_count/cast(population as float))*100 as vac_rate
+from #VaccinationRates
+
+--Creating view to store data for later visualizations
+Create View  VaccinationRates as
+select cd.continent, cd.location, cd.date, cd.population, cv.new_vaccinations, sum(cast(cv.new_vaccinations as bigint)) over (partition by cd.location order by cd.location, cd.date) as rolling_vac_count
+from CovidDeaths cd
+join Vaccinations cv
+	on cd.location = cv.location AND cd.date = cv.date
+where cd.continent is not null
+
+Select *
+from VaccinationRates
